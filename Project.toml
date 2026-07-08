@@ -1,0 +1,23 @@
+name = "PathCompleteControl"
+uuid = "c6d8e6a8-3f2b-4fde-9a1b-2f3c4d5e6f70"
+version = "0.1.0"
+authors = ["Léa Ninite", "Adrien Banse", "Guillaume O. Berger", "Raphaël M. Jungers"]
+
+[deps]
+HybridSystems = "2207ec0c-686c-5054-b4d2-543502888820"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+MosekTools = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+SwitchOnSafety = "ceb7f16a-07bf-5f4a-9354-b68f01b1610f"
+
+[compat]
+HybridSystems = "0.4.4"
+JuMP = "1.30.1"
+LinearAlgebra = "1.12.0"
+MathOptInterface = "1.51.1"
+MosekTools = "0.15.10"
+StaticArrays = "1.9.18"
+SwitchOnSafety = "0.3.0"
+julia = "1.9"

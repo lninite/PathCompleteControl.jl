@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+
+# Misc
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Outputs
+figures/
+*.pdf
