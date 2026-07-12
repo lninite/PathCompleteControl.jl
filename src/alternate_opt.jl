@@ -9,7 +9,14 @@ import MathOptInterface as MOI
 
 export alternate_optimization
 
-function optimize_K_stab(P, A, B, Q, R, pc)
+function optimize_K_stab(
+    P::AbstractVector{<:AbstractMatrix{T}},
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
     dim = size(A[1], 1)
     udim = size(B[1], 2)
 
@@ -39,7 +46,15 @@ function optimize_K_stab(P, A, B, Q, R, pc)
     return value.(K), objective_value(model)
 end
 
-function optimize_K_fixed_gamma(γfix, P, A, B, Q, R, pc)
+function optimize_K_fixed_gamma(
+    γfix::Real,
+    P::AbstractVector{<:AbstractMatrix{T}},
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
     dim = size(A[1], 1)
     udim = size(B[1], 2)
 
@@ -73,7 +88,17 @@ function optimize_K_fixed_gamma(γfix, P, A, B, Q, R, pc)
     return value.(K), γpstar, γpstar <= γfix
 end
 
-function optimize_K(P, A, B, Q, R, pc; γ_low = 0.0, γ_high = 100.0, tol = 1e-3)
+function optimize_K(
+    P::AbstractVector{<:AbstractMatrix{T}},
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton;
+    γ_low::Real = 0.0,
+    γ_high::Real = 100.0,
+    tol::Real = 1e-3,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
     bestK = nothing
     bestγ = γ_high
 
@@ -94,7 +119,16 @@ function optimize_K(P, A, B, Q, R, pc; γ_low = 0.0, γ_high = 100.0, tol = 1e-3
     return bestK, bestγ
 end
 
-function feasible_P(K, γ, A, B, Q, R, pc; verbose = false)
+function feasible_P(
+    K::AbstractMatrix{T},
+    γ::Real,
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton;
+    verbose::Bool = false,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
     dim = size(A[1], 1)
 
     solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
@@ -137,7 +171,7 @@ function feasible_P(K, γ, A, B, Q, R, pc; verbose = false)
             Pα = value.(P[α])
             Pβ = value.(P[β])
             M = γ*Pα - Q - K' * R * K - Acl' * Pβ * Acl
-            if minimum(eigvals(Array(M))) < -1e-3
+            if minimum(eigvals(Array(M))) < -1e-4
                 if verbose
                     println("Constraint violated for transition $trans: minimum eigenvalue = $(minimum(eigvals(Array(M))))")
                 end
@@ -147,7 +181,7 @@ function feasible_P(K, γ, A, B, Q, R, pc; verbose = false)
         end
         for α in 1:nstates(pc)
             Pα = value.(P[α])
-            if minimum(eigvals(Array(Pα))) < -1e-6
+            if minimum(eigvals(Array(Pα))) < -1e-4
                 if verbose
                     println("P[$α] is not positive definite: minimum eigenvalue = $(minimum(eigvals(Array(Pα))))")
                 end
@@ -163,7 +197,18 @@ function feasible_P(K, γ, A, B, Q, R, pc; verbose = false)
     end
 end
 
-function optimize_P(K, A, B, Q, R, pc; γ_low = 0.0, γ_high = 100.0, tol = 1e-4, verbose = false)
+function optimize_P(
+    K::AbstractMatrix{T},
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton;
+    γ_low::Real = 0.0,
+    γ_high::Real = 100.0,
+    tol::Real = 1e-4,
+    verbose::Bool = false,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
     Pbest = nothing
 
     while γ_high - γ_low > tol
@@ -182,54 +227,91 @@ function optimize_P(K, A, B, Q, R, pc; γ_low = 0.0, γ_high = 100.0, tol = 1e-4
     return Pbest, γ_high
 end
 
-function alternate_optimization(A, B, Q, R, pc; N = 50, verbose = false, tol = 1e-3)
+# Initialization phase for the alternating optimization algorithm
+function initialize_controller(
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    pc::GraphAutomaton;
+    N::Int = 50,
+    verbose::Bool = false,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
+
     dim = size(A[1], 1)
 
     P = [Matrix{Float64}(I, dim, dim) for _ in 1:nstates(pc)]
-    γ = Inf
     K = zeros(size(B[1], 2), dim)
 
-    # Stabilization phase: find K and P such that γ < 1
+    # Small weights used only during the stabilization phase
+    Qstab = SMatrix{Nx,Nx,Float64}(I / 100)
+    Rstab = SMatrix{Nu,Nu,Float64}(I / 100)
+
     for iter in 1:N
         if verbose
             println("\n================================================")
-            println("Stab iteration $iter")
+            println("Stabilization iteration $iter")
             println("================================================")
         end
 
-        K, γK = optimize_K_stab(P, A, B, I/100, I/100, pc)
-        γ = γK
+        K, γK = optimize_K_stab(P, A, B, Qstab, Rstab, pc)
 
         if verbose
             println("γ(K-step) = $γK")
         end
 
-        P, γ = optimize_P(K, A, B, I/100, I/100, pc, verbose = verbose)
+        P, γP = optimize_P(
+            K,
+            A,
+            B,
+            Qstab,
+            Rstab,
+            pc;
+            verbose = verbose,
+        )
 
         if verbose
-            println("γ(P-step) = $γ")
+            println("γ(P-step) = $γP")
         end
 
-        if γ < 1.0
+        if γP < 1
             if verbose
                 println("Stabilization phase converged: γ < 1 at iteration $iter")
             end
-            break
+            return K, P
         end
     end
 
-    if γ >= 1.0
-        error("Alternate optimization failed to find a stabilizing controller")
-    end
+    error(
+        "Failed to find a stabilizing controller after $N iterations. γ = $γP"
+    )
+end
 
-    # Optimal phase: minimize cost with γ = 1
+# Main function : compute a stabilizing K and P, then alternate between optimizing K and P until convergence 
+function alternate_optimization(
+    A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}},
+    B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}},
+    Q::SMatrix{Nx, Nx, T, Nxx},
+    R::SMatrix{Nu, Nu, T, Nuu},
+    pc::GraphAutomaton;
+    N::Int = 50,
+    verbose::Bool = false,
+    tol::Real = 1e-3,
+) where {Nx, Nu, T, Nxx, Nxu, Nuu}
+
+    K, P = initialize_controller(
+    A,
+    B,
+    pc;
+    N = N,
+    verbose = verbose,
+    )
+    
     K_old = copy(K)
-    P_old = deepcopy(P)
+    P_old = copy(P)
 
     for iter in 1:N
         if verbose
             println("\n================================================")
-            println("Optimal iteration $iter")
+            println("Iteration $iter")
             println("================================================")
         end
 
@@ -258,16 +340,18 @@ function alternate_optimization(A, B, Q, R, pc; N = 50, verbose = false, tol = 1
             end
 
             if K_norm_diff_opt < tol && max_P_diff_opt < tol
-                println("Optimal phase converged at iteration $iter: K and P changes below threshold")
+                if verbose
+                    println("Converged at iteration $iter: K and P changes below threshold")
+                end
                 break
             end
         end
 
         K_old = copy(K)
-        P_old = deepcopy(P)
+        P_old = copy(P)
     end
 
-    return K, P, γ
+    return K, P
 end
 
 end # module

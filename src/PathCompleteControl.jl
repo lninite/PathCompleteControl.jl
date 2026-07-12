@@ -1,7 +1,7 @@
 module PathCompleteControl
 
 """
-    PathCompleteControl
+PathCompleteControl
 
 Code accompanying the paper:
 "Robust Optimal Control of Arbitrarily Switched Systems: A Path-Complete Framework"
@@ -10,19 +10,18 @@ Authors: Léa Ninite, Adrien Banse, Guillaume O. Berger, Raphaël M. Jungers
 """
 
 include("utils.jl")
-include("bounds.jl")
-include("mpc.jl")
+include("complete_graph_synthesis.jl")
 include("alternate_opt.jl")
+include("mpc.jl")
+include("simulate.jl")
 
 using .Utils
-using .Bounds
-using .MPC
+using .CompleteGraphSynthesis
 using .AlternateOpt
+using .MPC
+using .Simulate
 
-export de_bruijn, feedback_tree, white_box_JSR, common_Lyap, largest_gamma_bisection
-export pclqr_control
-export robust_mpc, robust_mpc_terminal_cost
-export alternate_optimization
+export de_bruijn, save_data, print_path_complete_results, print_mpc_results, pclqr_control, alternate_optimization, robust_mpc, robust_mpc_terminal_cost, simulate_system
 
 const VERSION = v"0.1.0"
 

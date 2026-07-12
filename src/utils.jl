@@ -6,8 +6,11 @@ using MosekTools
 using StaticArrays
 using JuMP
 using LinearAlgebra
+using Serialization
+using Dates
+using Statistics
 
-export de_bruijn, feedback_tree, white_box_JSR, common_Lyap, largest_gamma_bisection
+export de_bruijn, save_data, print_path_complete_results, print_mpc_results
 
 function de_bruijn(order::Int, n_modes::Int; mode::Symbol=:complete)
     tuples = Iterators.product([1:n_modes for _ ∈ 1:order]...)
@@ -27,51 +30,141 @@ function de_bruijn(order::Int, n_modes::Int; mode::Symbol=:complete)
     return automaton
 end
 
-function common_Lyap(A::Vector{<:Any}, gamma::Float64 = 1.0)
-    solver = optimizer_with_attributes(Mosek.Optimizer, MOI.Silent() => true)
-    dim, _ = size(A[1])
-    model = Model(solver)
-    @variable(model, P[1:dim, 1:dim])
-    @constraint(model, P in PSDCone())
-    @objective(model, Min, 0) 
-    for σ in 1:length(A)
-        @constraint(
-            model, 
-            P - (gamma*A[σ]') * P * (gamma*A[σ]) in PSDCone()
-        )
-    end
-    @constraint(model, P - I in PSDCone())
-    @constraint(model, 100*I - P in PSDCone())
+function save_data(data, prefix; folder="data")
 
-    JuMP.optimize!(model)
-    if termination_status(model) ∈ [MOI.OPTIMAL, MOI.SLOW_PROGRESS]
-        return value.(P)
-    else
-        error("The common Lyapunov problem is infeasible!")
+    mkpath(folder)
+
+    filename = joinpath(
+        folder,
+        prefix * "_" * Dates.format(Dates.now(), "yyyy-mm-dd_HHMMSS") * ".jls"
+    )
+
+    open(filename, "w") do io
+        serialize(io, data)
     end
+
+    println("Saved $(prefix) to $filename")
+
 end
 
-function largest_gamma_bisection(
-    A::Vector{<:Any}, 
-    gamma_lower::Float64 = 0.0,
-    gamma_upper::Float64 = 100.0,
-    tol::Float64 = 1e-4,
-    max_iter::Int = 50
-)
-    for iter in 1:max_iter
-        gamma_mid = (gamma_lower + gamma_upper) / 2.0
-        try
-            common_Lyap(A, gamma_mid)
-            gamma_lower = gamma_mid
-        catch
-            gamma_upper = gamma_mid
-        end
-        if gamma_upper - gamma_lower < tol
-            break
-        end
+function print_path_complete_results(results, title)
+
+    println("\n$title")
+
+    for ℓ in sort(collect(keys(results)))
+
+        J = mean(results[ℓ][:cost])
+        σ = std(results[ℓ][:cost])
+
+        println(
+            "  - Order = $ℓ: mean_cost = ",
+            round(J,digits=6),
+            " ± ",
+            round(σ,digits=6),
+            ", V(x0) = ",
+            round(results[ℓ][:V],digits=6),
+            ", offline = ",
+            round(results[ℓ][:t_off],digits=6),
+            " s, online = ",
+            round(results[ℓ][:t_on],digits=6),
+            " s, total = ",
+            round(results[ℓ][:t_off] + results[ℓ][:t_on],digits=6),
+            " s"
+        )
+
     end
-    
-    return (gamma_lower + gamma_upper) / 2.0
+
+end
+
+function print_mpc_results(
+    mpc_results,
+    mpc_terminal_cost_common_results,
+    mpc_terminal_cost_results,
+    mpc_horizons
+)
+
+    println("\n================ MPC RESULTS =================")
+
+    for N in mpc_horizons
+
+        println("\nHorizon = $N")
+
+        # ----------------------------------------------------
+        # MPC
+        # ----------------------------------------------------
+
+        J = mean(mpc_results[N][:cost])
+        σ = std(mpc_results[N][:cost])
+        t = mpc_results[N][:t_on]
+
+        println(
+            "  - MPC (no terminal cost):           cost = ",
+            round(J, digits = 6),
+            " ± ",
+            round(σ, digits = 6),
+            ", online = ",
+            round(t, digits = 6),
+            " s"
+        )
+
+        # ----------------------------------------------------
+        # MPC + common terminal cost
+        # ----------------------------------------------------
+
+        J = mean(mpc_terminal_cost_common_results[N][:cost])
+        σ = std(mpc_terminal_cost_common_results[N][:cost])
+
+        t_on = mpc_terminal_cost_common_results[N][:t_on]
+        t_off = mpc_terminal_cost_common_results[:t_off]
+
+        println(
+            "  - MPC + terminal cost (common P):   cost = ",
+            round(J, digits = 6),
+            " ± ",
+            round(σ, digits = 6),
+            ", offline = ",
+            round(t_off, digits = 6),
+            " s, online = ",
+            round(t_on, digits = 6),
+            " s, total = ",
+            round(t_off + t_on, digits = 6),
+            " s"
+        )
+
+        # ----------------------------------------------------
+        # MPC + dual De Bruijn terminal cost
+        # ----------------------------------------------------
+
+        if haskey(mpc_terminal_cost_results, N)
+
+            if !isempty(mpc_terminal_cost_results[N][:cost])
+
+                J = mean(mpc_terminal_cost_results[N][:cost])
+                σ = std(mpc_terminal_cost_results[N][:cost])
+
+                t_on = mpc_terminal_cost_results[N][:t_on]
+                t_off = mpc_terminal_cost_results[N][:t_off]
+
+                println(
+                    "  - MPC + terminal cost (order 1 dual De Bruijn):    cost = ",
+                    round(J, digits = 6),
+                    " ± ",
+                    round(σ, digits = 6),
+                    ", offline = ",
+                    round(t_off, digits = 6),
+                    " s, online = ",
+                    round(t_on, digits = 6),
+                    " s, total = ",
+                    round(t_off + t_on, digits = 6),
+                    " s"
+                )
+
+            end
+
+        end
+
+    end
+
 end
 
 end

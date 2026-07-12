@@ -8,16 +8,16 @@ using MosekTools
 export robust_mpc, robust_mpc_terminal_cost
 
 function robust_mpc(
-    x0::SVector{D,T},
-    Σ_basis::AbstractVector{<:SMatrix{D,D,T,N1}},
-    B::AbstractVector{<:SMatrix{D,Nu,T,N2}},
-    Q::SMatrix{D,D,T,N3},
-    R::SMatrix{Nu,Nu,T,N4};
+    x0::SVector{Nx,T},
+    A::AbstractVector{<:SMatrix{Nx,Nx,T,Nxx}},
+    B::AbstractVector{<:SMatrix{Nx,Nu,T,Nxu}},
+    Q::SMatrix{Nx,Nx,T,Nxx},
+    R::SMatrix{Nu,Nu,T,Nuu};
     horizon::Int = 4
-) where {D,T,Nu,N1,N2,N3,N4}
+) where {Nx,Nu,T,Nxx,Nxu,Nuu}
 
-    num_modes::Int = length(Σ_basis)
-    nu::Int = size(B[1], 2)
+    num_modes = length(A)
+    nu = size(B[1], 2)
 
     switching_sequences = collect(
         Iterators.product(
@@ -44,12 +44,12 @@ function robust_mpc(
         cost = @expression(model, 0.0)
 
         for t in 0:horizon-1
-            mode::Int = σ[t+1]
+            mode = σ[t+1]
             prefix = t == 0 ? () : Tuple(σ[1:t])
             u = U[prefix]
 
             cost += x' * Q * x + u' * R * u
-            x = Σ_basis[mode] * x + B[mode] * u
+            x = A[mode] * x + B[mode] * u
         end
 
         @constraint(model, cost <= γ)
@@ -62,17 +62,17 @@ function robust_mpc(
 end
 
 function robust_mpc_terminal_cost(
-    x0::SVector{D,T},
-    Σ_basis::AbstractVector{<:SMatrix{D,D,T,N1}},
-    B::AbstractVector{<:SMatrix{D,Nu,T,N2}},
-    Q::SMatrix{D,D,T,N3},
-    R::SMatrix{Nu,Nu,T,N4},
+    x0::SVector{Nx,T},
+    A::AbstractVector{<:SMatrix{Nx,Nx,T,Nxx}},
+    B::AbstractVector{<:SMatrix{Nx,Nu,T,Nxu}},
+    Q::SMatrix{Nx,Nx,T,Nxx},
+    R::SMatrix{Nu,Nu,T,Nuu},
     P::AbstractVector{<:AbstractMatrix{T}};
     horizon::Int = 4
-) where {D,T,Nu,N1,N2,N3,N4}
+) where {Nx,Nu,T,Nxx,Nxu,Nuu}
 
-    num_modes::Int = length(Σ_basis)
-    nu::Int = size(B[1], 2)
+    num_modes = length(A)
+    nu = size(B[1], 2)
 
     switching_sequences = collect(
         Iterators.product(
@@ -104,12 +104,12 @@ function robust_mpc_terminal_cost(
         cost = @expression(model, 0.0)
 
         for t in 0:horizon-1
-            mode::Int = σ[t+1]
+            mode = σ[t+1]
             prefix = t == 0 ? () : Tuple(σ[1:t])
             u = U[prefix]
 
             cost += x' * Q * x + u' * R * u
-            x = Σ_basis[mode] * x + B[mode] * u
+            x = A[mode] * x + B[mode] * u
         end
 
         cost += t_var[Tuple(σ)]

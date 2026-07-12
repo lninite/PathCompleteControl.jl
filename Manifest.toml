@@ -2,7 +2,7 @@
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "6339adf98f1f95742a1480932d6cbba43204e50e"
+project_hash = "7eecc198c6d3fad47a20153aeafd91de269faba8"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "d9aaef7c63466eee4de23b4d9dad03629df54bea"
@@ -104,6 +104,10 @@ git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.9+0"
 
+[[deps.CRC32c]]
+uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
+version = "1.11.0"
+
 [[deps.CRlibm]]
 deps = ["CRlibm_jll"]
 git-tree-sha1 = "66188d9d103b92b6cd705214242e27f5737a1e5e"
@@ -115,6 +119,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
+
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "REPL", "UUIDs"]
+git-tree-sha1 = "cfb7a2e89e245a9d5016b70323db412b3a7438d5"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "3.0.2"
 
 [[deps.CodecBzip2]]
 deps = ["Bzip2_jll", "TranscodingStreams"]
@@ -169,6 +179,11 @@ weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
     CompatLinearAlgebraExt = "LinearAlgebra"
+
+[[deps.Compiler]]
+git-tree-sha1 = "382d79bfe72a406294faca39ef0c3cef6e6ce1f1"
+uuid = "807dbc54-b67e-4c79-8afb-eafe4df6f2e1"
+version = "0.1.1"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -549,6 +564,12 @@ version = "1.30.1"
     [deps.JuMP.weakdeps]
     DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "58927c485919bf17ea308d9d82156de1adf4b006"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.10.12"
+
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
 uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
@@ -627,6 +648,12 @@ version = "1.0.1"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
+
+[[deps.LoweredCodeUtils]]
+deps = ["CodeTracking", "Compiler", "JuliaInterpreter"]
+git-tree-sha1 = "3733419e9a71156b389f3e331672d2e95436783f"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "3.6.2"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -801,7 +828,7 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.6"
 
 [[deps.PathCompleteControl]]
-deps = ["HybridSystems", "JuMP", "MathOptInterface", "MosekTools", "StaticArrays", "SwitchOnSafety"]
+deps = ["Dates", "HybridSystems", "JuMP", "LinearAlgebra", "MathOptInterface", "MosekTools", "Revise", "Serialization", "StaticArrays", "SwitchOnSafety"]
 path = "."
 uuid = "c6d8e6a8-3f2b-4fde-9a1b-2f3c4d5e6f70"
 version = "0.1.0"
@@ -907,6 +934,16 @@ deps = ["UUIDs"]
 git-tree-sha1 = "62389eeff14780bfe55195b7204c0d8738436d64"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.1"
+
+[[deps.Revise]]
+deps = ["CRC32c", "CodeTracking", "FileWatching", "InteractiveUtils", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Preferences", "REPL", "UUIDs"]
+git-tree-sha1 = "27e3ee13fc8739a59b380d6163d6a82f52c03bd7"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.15.1"
+weakdeps = ["Distributed"]
+
+    [deps.Revise.extensions]
+    DistributedExt = "Distributed"
 
 [[deps.RoundingEmulator]]
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
