@@ -10,14 +10,14 @@ Authors: Léa Ninite, Adrien Banse, Guillaume O. Berger, Raphaël M. Jungers
 """
 
 include("utils.jl")
-include("complete_graph_synthesis.jl")
-include("alternate_opt.jl")
+include("complete_graph_policy_synthesis.jl")
+include("general_graph_policy_synthesis.jl")
 include("mpc.jl")
 include("simulate.jl")
 
 using .Utils
-using .CompleteGraphSynthesis
-using .AlternateOpt
+using .CompleteGraphPolicySynthesis
+using .GeneralGraphPolicySynthesis
 using .MPC
 using .Simulate
 

@@ -47,7 +47,7 @@ These scripts generate the data and figures reported in the manuscript.
   Reproduces Figure 5 of the paper, illustrating the computed upper bounds obtained with our approach for a two-dimensional system.
 
 - `temperature_regulation.jl`  
-  Reproduces Table 1 of the paper, comparing our approach (complete and co-complete graphs) with MPC (with and without a terminal cost) in terms of performance and computation time.
+  Reproduces Table 1 of the paper, comparing our approach (complete and co-complete graphs) with MPC (with and without a terminal cost) in terms of cost and computation time.
 
 - `plot_trajectories.jl`  
   Reproduces Figure 7 of the paper, comparing the closed-loop trajectories obtained with several controllers (path-complete controllers and MPC).

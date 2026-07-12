@@ -1,4 +1,4 @@
-module AlternateOpt
+module GeneralGraphPolicySynthesis
 
 using StaticArrays
 using HybridSystems

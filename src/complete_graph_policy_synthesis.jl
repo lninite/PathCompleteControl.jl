@@ -1,4 +1,4 @@
-module CompleteGraphSynthesis
+module CompleteGraphPolicySynthesis
 
 using StaticArrays
 using HybridSystems
