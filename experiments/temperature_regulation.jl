@@ -110,7 +110,7 @@ for ℓ in 1:order_max
     pc = de_bruijn(ℓ, length(A), mode = :complete)
 
     t_off = @elapsed begin
-        P, K = pclqr_control(
+        P, K = single_sdp(
             A,
             B,
             Q,
@@ -174,7 +174,7 @@ end
 t_off = @elapsed begin
 
     P_common, K_common =
-        pclqr_control(
+        single_sdp(
             A,
             B,
             Q,

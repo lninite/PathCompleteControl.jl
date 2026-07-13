@@ -19,6 +19,7 @@ The trajectory file must have been generated beforehand by running
 using Serialization
 using Dates
 using Plots
+using StaticArrays
 
 function plot_saved_trajectories(;
     trial::Int = 1,
@@ -81,6 +82,16 @@ function plot_saved_trajectories(;
         colorant"seagreen",
         colorant"deepskyblue3",
         colorant"darkorange2"
+    ]
+
+    #------------------------------------------------------------
+    # Linestyles 
+    #------------------------------------------------------------
+    ls = [
+        :solid,
+        :solid,
+        :solid,
+        :dash
     ]
 
     # ------------------------------------------------------------
@@ -153,7 +164,8 @@ function plot_saved_trajectories(;
             zone_1,
             color = colors[i],
             linewidth = i == 3 ? 2.5 : 2,
-            label = ""
+            label = "",
+            linestyle = ls[i]   
         )
 
         Plots.plot!(
@@ -162,7 +174,8 @@ function plot_saved_trajectories(;
             zone_2,
             color = colors[i],
             linewidth = i == 3 ? 2.5 : 2,
-            label = ""
+            label = "",
+            linestyle = ls[i]
         )
 
         Plots.plot!(
@@ -171,7 +184,8 @@ function plot_saved_trajectories(;
             zone_3,
             color = colors[i],
             linewidth = i == 3 ? 2.5 : 2,
-            label = ""
+            label = "",
+            linestyle = ls[i]
         )
 
     end
@@ -212,13 +226,13 @@ function plot_saved_trajectories(;
     ]
 
     widths = [
-        2.0,
-        2.0,
-        2.5,
-        2.0
+        2,
+        2,
+        2,
+        2
     ]
 
-    for (lbl, col, lw) in zip(labels, colors, widths)
+    for (lbl, col, lw, ls) in zip(labels, colors, widths, ls)
 
         Plots.plot!(
             legend_plot,
@@ -227,7 +241,8 @@ function plot_saved_trajectories(;
             color = col,
             linewidth = lw,
             label = lbl,
-            legendfontsize = 14
+            legendfontsize = 14,
+            linestyle = ls
         )
 
     end
@@ -263,7 +278,7 @@ function plot_saved_trajectories(;
         p2,
         p3,
         layout = @layout([A{0.12h}; B; C; D]),
-        size = (850, 1200),
+        size = (900, 1200),
         left_margin = 12Plots.mm,
         right_margin = 8Plots.mm,
         bottom_margin = 8Plots.mm,

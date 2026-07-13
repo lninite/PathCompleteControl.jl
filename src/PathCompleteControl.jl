@@ -21,7 +21,7 @@ using .GeneralGraphPolicySynthesis
 using .MPC
 using .Simulate
 
-export de_bruijn, save_data, print_path_complete_results, print_mpc_results, pclqr_control, alternate_optimization, robust_mpc, robust_mpc_terminal_cost, simulate_system
+export de_bruijn, save_data, print_path_complete_results, print_mpc_results, single_sdp, alternate_optimization, robust_mpc, robust_mpc_terminal_cost, simulate_system
 
 const VERSION = v"0.1.0"
 

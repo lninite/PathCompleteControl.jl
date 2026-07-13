@@ -7,9 +7,9 @@ using MosekTools
 using LinearAlgebra
 import MathOptInterface as MOI
 
-export pclqr_control
+export single_sdp
 
-function pclqr_control(
+function single_sdp(
     A::AbstractVector{<:SMatrix{Nx, Nx, T, Nxx}}, 
     B::AbstractVector{<:SMatrix{Nx, Nu, T, Nxu}}, 
     Q::SMatrix{Nx, Nx, T, Nxx},

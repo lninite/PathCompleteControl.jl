@@ -91,7 +91,7 @@ for order in orders
         mode = :complete
     )
 
-    P, K = pclqr_control(
+    P, K = single_sdp(
         A,
         B,
         Q,
