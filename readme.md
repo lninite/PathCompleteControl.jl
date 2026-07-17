@@ -8,7 +8,7 @@ This repository contains all the code necessary to reproduce the experiments pre
 Léa Ninite, Adrien Banse, Guillaume O. Berger, Raphaël M. Jungers
 
 <!-- Optionally add -->
-<!-- **Paper:** [Preprint](link) -->
+**Paper:** [Preprint](https://arxiv.org/abs/2607.15055)
 
 ---
 
