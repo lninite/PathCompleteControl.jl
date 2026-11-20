@@ -216,6 +216,9 @@ mpc_terminal_cost_results[N][:P] = P_terminal
 mpc_terminal_cost_results[N][:K] = K_terminal
 mpc_terminal_cost_results[N][:t_off] = t_off
 
+# Compile the MPC controller so that compilation is not counted in the online time
+TreeMPC(A, B, Q, R; horizon = 1, terminal_cost = P_common)(x0)
+
 println("\n================ MONTE CARLO =================")
 
 all_switching_sequences = Vector{Vector{Int}}()
@@ -233,8 +236,7 @@ for trial in 1:num_trials
 
         # ---------------- MPC ----------------
 
-        controller = x -> robust_mpc(
-            x,
+        controller = TreeMPC(
             A,
             B,
             Q,
@@ -263,14 +265,13 @@ for trial in 1:num_trials
 
         # ---------------- MPC + common terminal ----------------
 
-        controller = x -> robust_mpc_terminal_cost(
-            x,
+        controller = TreeMPC(
             A,
             B,
             Q,
-            R,
-            P_common;
-            horizon = N
+            R;
+            horizon = N,
+            terminal_cost = P_common
         )
 
         J, t_on, traj = simulate_system(
@@ -296,14 +297,13 @@ for trial in 1:num_trials
 
         if N == mpc_horizons[end]
 
-            controller = x -> robust_mpc_terminal_cost(
-                x,
+            controller = TreeMPC(
                 A,
                 B,
                 Q,
-                R,
-                mpc_terminal_cost_results[N][:P];
-                horizon = N
+                R;
+                horizon = N,
+                terminal_cost = mpc_terminal_cost_results[N][:P]
             )
 
             J, t_on, traj = simulate_system(
